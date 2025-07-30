@@ -24,7 +24,7 @@ export default function BloodRequestCard({ request, onUpdate }) {
     return (
         <div className="blood-request-card">
             <div className="card-header">
-                 <h3 className="blood-request-header"><BloodDropIcon /> Urgent Request: {request.blood_group}</h3>
+                 <h3 className="blood-request-header"><BloodDropIcon /> Urgent Request: {request.blood_group} 🩸</h3>
                  {canManage && (
                     <div className="card-actions">
                         <button onClick={() => navigate(`/blood-request/edit/${request.id}`)} aria-label="Edit request"><EditIcon/></button>
