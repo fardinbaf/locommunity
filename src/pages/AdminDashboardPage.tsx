@@ -43,11 +43,16 @@ export default function AdminDashboardPage() {
     const [marqueeText, setMarqueeText] = useState('');
     const [footerData, setFooterData] = useState({ logoUrl: '', about: '', links: [], contact: { address: '', phone: '', email: '' } });
 
-    const fetchData = async (tableName, setter, query = '*', orderBy = 'created_at', orderAsc = false) => {
+    const fetchData = async (tableName, setter, options: { query?: string, orderBy?: string, ascending?: boolean } = {}) => {
+        const { query = '*', orderBy, ascending = false } = options;
+        
         let selectQuery = supabase
             .from(tableName)
-            .select(query)
-            .order(orderBy, { ascending: orderAsc });
+            .select(query);
+            
+        if (orderBy) {
+            selectQuery = selectQuery.order(orderBy, { ascending });
+        }
 
         const { data, error } = await selectQuery;
         if (error) {
@@ -64,17 +69,22 @@ export default function AdminDashboardPage() {
         setMarqueeText(content.marquee || '');
         setFooterData(content.footerData || { logoUrl: '', about: '', links: [], contact: { address: '', phone: '', email: '' } });
     };
+    
+    const fetchAllData = () => {
+        fetchData('profiles', setUsers, { orderBy: 'username', ascending: true });
+        fetchData('reports', setReports, { orderBy: 'created_at' });
+        fetchData('blood_requests', setBloodRequests, { orderBy: 'created_at' });
+        fetchData('general_info', setGeneralInfos, { orderBy: 'created_at' });
+        fetchData('for_rent', setForRent, { query: '*, profiles(username)', orderBy: 'created_at' });
+        fetchData('sponsors', setSponsors, { orderBy: 'created_at' });
+        fetchData('donations', setDonations, { orderBy: 'created_at' });
+        fetchData('donation_types', setDonationTypes, { orderBy: 'name' });
+        fetchSiteContent();
+    };
+
 
     useEffect(() => {
-        fetchData('profiles', setUsers, '*', 'username', true);
-        fetchData('reports', setReports);
-        fetchData('blood_requests', setBloodRequests);
-        fetchData('general_info', setGeneralInfos);
-        fetchData('for_rent', setForRent, '*, profiles(username)');
-        fetchData('sponsors', setSponsors);
-        fetchData('donations', setDonations);
-        fetchData('donation_types', setDonationTypes);
-        fetchSiteContent();
+        fetchAllData();
     }, [supabase]);
     
     useEffect(() => {
@@ -93,18 +103,7 @@ export default function AdminDashboardPage() {
             showToast(`Error deleting item from ${tableName}`, 'error');
         } else {
             showToast('Item deleted successfully.');
-            // Refetch data for the affected table
-            const fetchers = {
-                profiles: () => fetchData('profiles', setUsers, '*', 'username', true),
-                reports: () => fetchData('reports', setReports),
-                blood_requests: () => fetchData('blood_requests', setBloodRequests),
-                general_info: () => fetchData('general_info', setGeneralInfos),
-                for_rent: () => fetchData('for_rent', setForRent, '*, profiles(username)'),
-                sponsors: () => fetchData('sponsors', setSponsors),
-                donations: () => fetchData('donations', setDonations),
-                donation_types: () => fetchData('donation_types', setDonationTypes),
-            };
-            fetchers[tableName]();
+            fetchAllData();
         }
     };
     
@@ -113,7 +112,7 @@ export default function AdminDashboardPage() {
         if (error) showToast("Failed to update sponsor status.", "error");
         else {
             showToast("Sponsor status updated.");
-            fetchData('sponsors', setSponsors);
+            fetchData('sponsors', setSponsors, { orderBy: 'created_at' });
         }
     }
 
@@ -122,7 +121,7 @@ export default function AdminDashboardPage() {
         if (error) showToast("Failed to update listing status.", "error");
         else {
             showToast("Listing status updated.");
-            fetchData('for_rent', setForRent, '*, profiles(username)');
+            fetchData('for_rent', setForRent, { query: '*, profiles(username)', orderBy: 'created_at' });
         }
     };
     
@@ -133,7 +132,7 @@ export default function AdminDashboardPage() {
         else {
             showToast("Sponsor added.");
             setNewSponsor({ image_url: '', link_url: '' });
-            fetchData('sponsors', setSponsors);
+            fetchData('sponsors', setSponsors, { orderBy: 'created_at' });
         }
     }
     
@@ -270,7 +269,7 @@ export default function AdminDashboardPage() {
                  {activeTab === 'donations' && (
                     <>
                         <AdminFormSection title="Manage Donation Types">
-                            <form onSubmit={async (e) => { e.preventDefault(); await supabase.from('donation_types').insert({ name: newDonationType }); fetchData('donation_types', setDonationTypes); setNewDonationType(''); }} className="form-container" style={{padding: 0, background: 'none', border: 'none'}}>
+                            <form onSubmit={async (e) => { e.preventDefault(); await supabase.from('donation_types').insert({ name: newDonationType }); fetchData('donation_types', setDonationTypes, {orderBy: 'name'}); setNewDonationType(''); }} className="form-container" style={{padding: 0, background: 'none', border: 'none'}}>
                                 <div className="form-group"><label>New Type Name</label><input type="text" value={newDonationType} onChange={e => setNewDonationType(e.target.value)} required/></div>
                                 <button type="submit" className="btn-primary">Add Type</button>
                             </form>
