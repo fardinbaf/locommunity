@@ -73,7 +73,7 @@ export default function HomePage() {
         <div className="homepage-layout">
             <header className="banner-header" style={{backgroundImage: `url(${siteContent.bannerUrl || 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'})`}}>
                 <div className="banner-content">
-                    <h1>Welcome to Community Hub</h1>
+                    <h1>Welcome to Living Out Community Hub</h1>
                     <p>Your one-stop platform for community support, information, and action.</p>
                 </div>
             </header>
