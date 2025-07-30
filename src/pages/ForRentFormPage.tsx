@@ -60,21 +60,21 @@ export default function ForRentFormPage() {
             title: formData.title,
             address: formData.address,
             description: formData.description,
-            rent: parseInt(formData.rent),
+            rent: parseInt(formData.rent) || 0,
             contact: formData.contact,
             image_url,
-            user_id: user.id
         };
         
         let error;
         if (isEditMode) {
-             // In edit mode, we only update the fields from the form.
-            // The is_approved status is handled by admins separately.
+            // In edit mode, we only update the fields from the form.
+            // is_approved is handled by admins separately, and user_id should not change.
             ({ error } = await supabase.from('for_rent').update(listingPayload).eq('id', id));
         } else {
-            // For new listings, set is_approved to false for regular users, and true for admins.
+            // For new listings, add user_id and set is_approved to false for regular users, true for admins.
             const insertPayload = { 
-                ...listingPayload, 
+                ...listingPayload,
+                user_id: user.id, 
                 is_approved: profile?.is_admin || false 
             };
             ({ error } = await supabase.from('for_rent').insert(insertPayload));
